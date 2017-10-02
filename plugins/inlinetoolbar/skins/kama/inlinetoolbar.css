@@ -7,12 +7,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
 {
 	position: absolute;
 	z-index: 10000;
-<<<<<<< HEAD
 	background: #fff;
-=======
-
-	background: #ffffff;
->>>>>>> CSS styling for inline toolbar
 	border: 1px solid #D3D3D3;
 	outline: none;
 }
