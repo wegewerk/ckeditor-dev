@@ -178,7 +178,8 @@ CKEDITOR.DIALOG_STATE_BUSY = 2;
 			close = body.getChild( 1 );
 
 		// Don't allow dragging on dialog (#13184).
-		editor.plugins.clipboard && CKEDITOR.plugins.clipboard.preventDefaultDropOnElement( body );
+		// asz: um Himmels Willen...
+		//editor.plugins.clipboard && CKEDITOR.plugins.clipboard.preventDefaultDropOnElement( body );
 
 		// IFrame shim for dialog that masks activeX in IE. (#7619)
 		if ( CKEDITOR.env.ie && !CKEDITOR.env.quirks && !CKEDITOR.env.edge ) {
