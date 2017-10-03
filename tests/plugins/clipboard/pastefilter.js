@@ -1,4 +1,4 @@
-/* bender-tags: editor,unit */
+/* bender-tags: editor */
 /* bender-ckeditor-plugins: toolbar,clipboard,pastetext */
 /* bender-include: _helpers/pasting.js */
 /* global assertPasteEvent */
@@ -109,6 +109,10 @@
 		return {
 			getTransferType: function() {
 				return type;
+			},
+
+			getData: function() {
+				return '';
 			}
 		};
 	}

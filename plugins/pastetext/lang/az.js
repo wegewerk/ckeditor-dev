@@ -4,5 +4,5 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
 */
 CKEDITOR.plugins.setLang( 'pastetext', 'az', {
 	button: 'Yalnız mətni saxla',
-	title: 'Adi mətn kimi əlavə et'
+	pasteNotification: 'Sizin İnternet bələdçiniz bu cür mətnin köçürməsini dəstəklənmir. Əlavə etmək üçün %1 basın.'
 } );

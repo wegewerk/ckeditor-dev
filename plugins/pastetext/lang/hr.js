@@ -4,5 +4,5 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
 */
 CKEDITOR.plugins.setLang( 'pastetext', 'hr', {
 	button: 'Zalijepi kao čisti tekst',
-	title: 'Zalijepi kao čisti tekst'
+	pasteNotification: 'Vaš preglednik Vam ne dozvoljava lijepljenje običnog teksta na ovaj način. Za lijepljenje, pritisnite %1.'
 } );

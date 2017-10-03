@@ -1,4 +1,4 @@
-/* bender-tags: editor,unit */
+/* bender-tags: editor */
 /* bender-ckeditor-plugins: link,toolbar */
 
 ( function() {
@@ -6,12 +6,13 @@
 
 	bender.editor = {
 		config: {
-			autoParagraph: false
+			autoParagraph: false,
+			extraAllowedContent: 'span[style]'
 		}
 	};
 
 	bender.test( {
-		// #8275
+		// http://dev.ckeditor.com/ticket/8275
 		'test create link (without editor focus)': function() {
 			var bot = this.editorBot;
 
@@ -19,7 +20,7 @@
 			CKEDITOR.document.getById( 'blurTarget' ).focus();
 
 			bot.dialog( 'link', function( dialog ) {
-				// Should auto trim leading spaces. (#6845)
+				// Should auto trim leading spaces. (http://dev.ckeditor.com/ticket/6845)
 				dialog.setValueOf( 'info', 'url', ' ckeditor.com' );
 				dialog.getButton( 'ok' ).click();
 
@@ -92,7 +93,7 @@
 			assert.isTrue( unlink.state == CKEDITOR.TRISTATE_OFF, 'fake selection on non-editable element in link' );
 		},
 
-		// #9212
+		// http://dev.ckeditor.com/ticket/9212
 		'test getSelectedLink for selection inside read-only node': function() {
 			var bot = this.editorBot,
 				editor = this.editor;
@@ -162,7 +163,26 @@
 			} );
 		},
 
-		'test edit link text': function() {
+		'test edit selected text': function() {
+			var bot = this.editorBot,
+				expected = 'aa <a href="http://ckeditor.com">[foo]</a> cc';
+
+			bot.setHtmlWithSelection( 'aa [bb] cc' );
+
+			bot.dialog( 'link', function( dialog ) {
+				var displayTextInput = dialog.getContentElement( 'info', 'linkDisplayText' );
+				dialog.setValueOf( 'info', 'url', 'http://ckeditor.com' );
+
+				assert.isTrue( displayTextInput.isVisible(), 'Display text input visibility' );
+				assert.areSame( dialog.getValueOf( 'info', 'linkDisplayText' ), 'bb' );
+
+				dialog.setValueOf( 'info', 'linkDisplayText', 'foo' );
+				dialog.getButton( 'ok' ).click();
+				assert.areSame( expected, bender.tools.getHtmlWithSelection( bot.editor ) );
+			} );
+		},
+
+		'test edit existing link': function() {
 			var bot = this.editorBot,
 				expected = '[<a href="http://ckeditor.com">testing 1, 2, 3</a>]';
 
@@ -259,7 +279,7 @@
 		'test link with a nested anchors without text change': function() {
 
 			if ( CKEDITOR.env.ie && CKEDITOR.env.version == 8 ) {
-				// #14848
+				// http://dev.ckeditor.com/ticket/14848
 				assert.ignore();
 			}
 
@@ -358,7 +378,7 @@
 			);
 		},
 
-		// #11822
+		// http://dev.ckeditor.com/ticket/11822
 		'test select link on double-click': function() {
 			var bot = this.editorBot,
 				editor = bot.editor;
@@ -379,7 +399,7 @@
 			} );
 		},
 
-		// #11822
+		// http://dev.ckeditor.com/ticket/11822
 		'test select anchor on double-click': function() {
 			var bot = this.editorBot,
 				editor = bot.editor;
@@ -400,7 +420,30 @@
 			} );
 		},
 
-		// #13887
+		// http://dev.ckeditor.com/ticket/11956
+		'test select link with descendants on double-click': function() {
+			var bot = this.editorBot,
+				editor = bot.editor;
+
+			// Do not let dialog to show – it is not necessary.
+			editor.once( 'doubleclick', function( evt ) {
+				evt.cancel();
+
+				resume( function() {
+					assert.areSame( editor.document.findOne( 'a' ), evt.data.link, 'Link selected' );
+				} );
+			} );
+
+			bot.setData( '<p>a<a href="http://bar"><span style="background:#f00;">b</span></a>c</p>', function() {
+				editor.fire( 'doubleclick', {
+					element: editor.document.findOne( 'span' )
+				} );
+
+				wait();
+			} );
+		},
+
+		// http://dev.ckeditor.com/ticket/13887
 		'test link target special chars': function() {
 			var bot = this.editorBot;
 
@@ -433,7 +476,7 @@
 			} );
 		},
 
-		// #5278
+		// http://dev.ckeditor.com/ticket/5278
 		'test link target with space': function() {
 			var bot = this.editorBot;
 
@@ -451,13 +494,58 @@
 			} );
 		},
 
-		'test CKEDITOR.link.showDisplayTextForElement': function(){
+		'test CKEDITOR.link.showDisplayTextForElement': function() {
 			var doc = CKEDITOR.document,
 				showDisplayTextForElement = CKEDITOR.plugins.link.showDisplayTextForElement;
 
 			assert.isFalse( showDisplayTextForElement( doc.findOne( 'input#blurTarget' ), this.editor ), 'Input element' );
 			assert.isTrue( showDisplayTextForElement( doc.findOne( 'span' ), this.editor ), 'Span element' );
 			assert.isTrue( showDisplayTextForElement( null, this.editor ), 'Null value' );
+		},
+
+		// http://dev.ckeditor.com/ticket/13062
+		'test unlink when cursor is right before the link': function() {
+			var editor = this.editor,
+				bot = this.editorBot;
+
+			bot.setHtmlWithSelection( '<p><a href="http://cksource.com">^Link</a></p>' );
+
+			editor.ui.get( 'Unlink' ).click( editor );
+
+			assert.areSame( '<p>^Link</p>', bot.htmlWithSelection() );
+		},
+
+		// http://dev.ckeditor.com/ticket/13062
+		'test unlink when cursor is right after the link': function() {
+			// IE8 fails this test for unknown reason; however it does well
+			// in the manual one.
+			if ( CKEDITOR.env.ie && CKEDITOR.env.version == 8 ) {
+				assert.ignore();
+			}
+
+			var editor = this.editor,
+				bot = this.editorBot;
+
+			bot.setHtmlWithSelection( '<p><a href="http://cksource.com">Link^</a></p>' );
+
+			resume( function() {
+				editor.ui.get( 'Unlink' ).click( editor );
+				assert.areSame( '<p>Link^</p>', bot.htmlWithSelection() );
+			} );
+
+			wait( 100 );
+		},
+
+		// http://dev.ckeditor.com/ticket/13062
+		'test unlink when cursor is right before the link and there are more than one link in paragraph': function() {
+			var editor = this.editor,
+				bot = this.editorBot;
+
+			bot.setHtmlWithSelection( '<p>I am<a href="http://foo"> an </a>in<a href="http://bar">sta</a>nce of <a href="http://ckeditor.com">^<s>CKEditor</s></a>.</p>' );
+
+			editor.ui.get( 'Unlink' ).click( editor );
+
+			assert.areSame( '<p>I am<a href="http://foo"> an </a>in<a href="http://bar">sta</a>nce of ^<s>CKEditor</s>.</p>', bot.htmlWithSelection() );
 		}
 	} );
 } )();
