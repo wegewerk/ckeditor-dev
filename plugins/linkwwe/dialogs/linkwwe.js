@@ -40,7 +40,7 @@ CKEDITOR.dialog.add( 'linkwwe', function( editor ) {
 	// Handles the event when the "Type" selection box is changed.
 	var linkTypeChanged = function() {
 			var dialog = this.getDialog(),
-				partIds = [ 'pageOptions', 'urlOptions', 'anchorOptions', 'emailOptions' ],
+				partIds = [ 'pageOptions', 'urlOptions', 'emailOptions' ],
 				typeValue = this.getValue();
 
 			if ( typeValue == 'url' || typeValue == 'page' ) {
@@ -71,7 +71,7 @@ CKEDITOR.dialog.add( 'linkwwe', function( editor ) {
 		emailSubjectRegex = /subject=([^;?:@&=$,\/]*)/,
 		emailBodyRegex = /body=([^;?:@&=$,\/]*)/,
 		anchorRegex = /^#(.*)$/,
-                pageRegex = /^(?:\/?@{0,2}[0-9]+)?$/,
+		pageRegex = /^(?:\/?@{0,2}[0-9]+)?$/,
 		urlRegex = /^((?:http|https|ftp|news):\/\/)?(.*)$/,
 		selectableTargets = /^(_(?:self|top|parent|blank))$/,
 		encodedEmailLinkRegex = /^javascript:void\(location\.href='mailto:'\+String\.fromCharCode\(([^)]+)\)(?:\+'(.*)')?\)$/,
@@ -119,9 +119,9 @@ CKEDITOR.dialog.add( 'linkwwe', function( editor ) {
 
 			if ( !retval.type ) {
 				if ( ( anchorMatch = href.match( anchorRegex ) ) ) {
-					retval.type = 'anchor';
-					retval.anchor = {};
-					retval.anchor.name = retval.anchor.id = anchorMatch[ 1 ];
+					retval.type = 'page';
+					retval.page = {};
+					retval.page.href = href;
 				}
 				// Protected email link as encoded string.
 				else if ( ( emailMatch = href.match( emailRegex ) ) ) {
@@ -200,34 +200,6 @@ CKEDITOR.dialog.add( 'linkwwe', function( editor ) {
 				advAttr( 'advCharset', 'charset' );
 				advAttr( 'advStyles', 'style' );
 				advAttr( 'advRel', 'rel' );
-			}
-
-			// Find out whether we have any anchors in the editor.
-			var anchors = retval.anchors = [],
-				i, count, item;
-
-			// For some browsers we set contenteditable="false" on anchors, making document.anchors not to include them, so we must traverse the links manually (#7893).
-			if ( CKEDITOR.plugins.linkwwe.emptyAnchorFix ) {
-				var links = editor.document.getElementsByTag( 'a' );
-				for ( i = 0, count = links.count(); i < count; i++ ) {
-					item = links.getItem( i );
-					if ( item.data( 'cke-saved-name' ) || item.hasAttribute( 'name' ) )
-						anchors.push({ name: item.data( 'cke-saved-name' ) || item.getAttribute( 'name' ), id: item.getAttribute( 'id' ) } );
-				}
-			} else {
-				var anchorList = new CKEDITOR.dom.nodeList( editor.document.$.anchors );
-				for ( i = 0, count = anchorList.count(); i < count; i++ ) {
-					item = anchorList.getItem( i );
-					anchors[ i ] = { name: item.getAttribute( 'name' ), id: item.getAttribute( 'id' ) };
-				}
-			}
-
-			if ( CKEDITOR.plugins.linkwwe.fakeAnchor ) {
-				var imgs = editor.document.getElementsByTag( 'img' );
-				for ( i = 0, count = imgs.count(); i < count; i++ ) {
-					if ( ( item = CKEDITOR.plugins.linkwwe.tryRestoreFakeAnchor( editor, imgs.getItem( i ) ) ) )
-						anchors.push({ name: item.getAttribute( 'name' ), id: item.getAttribute( 'id' ) } );
-				}
 			}
 
 			// Record down the selected element in the dialog.
@@ -341,7 +313,6 @@ CKEDITOR.dialog.add( 'linkwwe', function( editor ) {
 				items: [
 					[ linkLang.toPage, 'page' ],
 					[ linkLang.toUrl, 'url' ],
-					[ linkLang.toAnchor, 'anchor' ],
 					[ linkLang.toEmail, 'email' ]
 					],
 				onChange: linkTypeChanged,
@@ -363,22 +334,22 @@ CKEDITOR.dialog.add( 'linkwwe', function( editor ) {
 						label: linkLang.page,
 						required: true,
 						onLoad: function() {
-							var pagename = document.createElement('span');
-							pagename.setAttribute('id', 'pagename');
-
 							$el = $('#'+this.domId);
 
-							$(pagename).appendTo($el.parent());
-
-							$input = $('input', $el);
+							var $input = $('input', $el);
 
 							lfstr = '<div class="link_finder">\
 									 <a title="LinkFinder" class="button"\
 									  href="javascript:openLinkFinder(\''+
-									  $input.attr('id')+'\');">Find Link</a>\
+									  $input.attr('id')+'\');">' + linkLang.findLink + '</a>\
 									 </div>';
 
-							$(lfstr).appendTo($el.parent());
+							$(lfstr).appendTo($input.parent());
+
+							var pagename = document.createElement('div');
+							pagename.setAttribute('id', 'pagename');
+
+							$(pagename).appendTo($el.parent());
 
 							$input.get(0).ondrop = function(ev) {
 								this.value = ev.dataTransfer.getData('text');
@@ -419,6 +390,9 @@ CKEDITOR.dialog.add( 'linkwwe', function( editor ) {
 								this.setValue( data.page.href );
 							this.allowOnChange = true;
 
+							$el = $('#'+this.domId);
+
+							$('input', $el).trigger('change');
 						},
 						commit: function( data ) {
 							// IE will not trigger the onChange event if the mouse has been used
@@ -544,116 +518,6 @@ CKEDITOR.dialog.add( 'linkwwe', function( editor ) {
 					label: commonLang.browseServer
 				}
 				]
-			},
-				{
-				type: 'vbox',
-				id: 'anchorOptions',
-				width: 260,
-				align: 'center',
-				padding: 0,
-				children: [
-					{
-					type: 'fieldset',
-					id: 'selectAnchorText',
-					label: linkLang.selectAnchor,
-					setup: function( data ) {
-						if ( data.anchors.length > 0 )
-							this.getElement().show();
-						else
-							this.getElement().hide();
-					},
-					children: [
-						{
-						type: 'hbox',
-						id: 'selectAnchor',
-						children: [
-							{
-							type: 'select',
-							id: 'anchorName',
-							'default': '',
-							label: linkLang.anchorName,
-							style: 'width: 100%;',
-							items: [
-								[ '' ]
-								],
-							setup: function( data ) {
-								this.clear();
-								this.add( '' );
-								for ( var i = 0; i < data.anchors.length; i++ ) {
-									if ( data.anchors[ i ].name )
-										this.add( data.anchors[ i ].name );
-								}
-
-								if ( data.anchor )
-									this.setValue( data.anchor.name );
-
-								var linkType = this.getDialog().getContentElement( 'info', 'linkType' );
-								if ( linkType && linkType.getValue() == 'email' )
-									this.focus();
-							},
-							commit: function( data ) {
-								if ( !data.anchor )
-									data.anchor = {};
-
-								data.anchor.name = this.getValue();
-							}
-						},
-							{
-							type: 'select',
-							id: 'anchorId',
-							'default': '',
-							label: linkLang.anchorId,
-							style: 'width: 100%;',
-							items: [
-								[ '' ]
-								],
-							setup: function( data ) {
-								this.clear();
-								this.add( '' );
-								for ( var i = 0; i < data.anchors.length; i++ ) {
-									if ( data.anchors[ i ].id )
-										this.add( data.anchors[ i ].id );
-								}
-
-								if ( data.anchor )
-									this.setValue( data.anchor.id );
-							},
-							commit: function( data ) {
-								if ( !data.anchor )
-									data.anchor = {};
-
-								data.anchor.id = this.getValue();
-							}
-						}
-						],
-						setup: function( data ) {
-							if ( data.anchors.length > 0 )
-								this.getElement().show();
-							else
-								this.getElement().hide();
-						}
-					}
-					]
-				},
-					{
-					type: 'html',
-					id: 'noAnchors',
-					style: 'text-align: center;',
-					html: '<div role="note" tabIndex="-1">' + CKEDITOR.tools.htmlEncode( linkLang.noAnchors ) + '</div>',
-					// Focus the first element defined in above html.
-					focus: true,
-					setup: function( data ) {
-						if ( data.anchors.length < 1 )
-							this.getElement().show();
-						else
-							this.getElement().hide();
-					}
-				}
-				],
-				setup: function( data ) {
-					if ( !this.getDialog().getContentElement( 'info', 'linkType' ) )
-						this.getElement().hide();
-				}
 			},
 				{
 				type: 'vbox',
@@ -943,7 +807,7 @@ CKEDITOR.dialog.add( 'linkwwe', function( editor ) {
 				{
 				type: 'vbox',
 				padding: 1,
-				children: [
+				children: [/*
 					{
 					type: 'hbox',
 					widths: [ '45%', '35%', '20%' ],
@@ -983,12 +847,13 @@ CKEDITOR.dialog.add( 'linkwwe', function( editor ) {
 
 					}
 					]
-				},
+				},*/
 					{
 					type: 'hbox',
-					widths: [ '45%', '35%', '20%' ],
+					//widths: [ '45%', '35%', '20%' ],
+					widths: [ '50%', '50%' ],
 					children: [
-						{
+						/*{
 						type: 'text',
 						label: linkLang.name,
 						id: 'advName',
@@ -996,7 +861,7 @@ CKEDITOR.dialog.add( 'linkwwe', function( editor ) {
 						setup: setupAdvParams,
 						commit: commitAdvParams
 
-					},
+					},*/
 						{
 						type: 'text',
 						label: linkLang.langCode,
@@ -1022,7 +887,7 @@ CKEDITOR.dialog.add( 'linkwwe', function( editor ) {
 					]
 				}
 				]
-			},
+			}/*,
 				{
 				type: 'vbox',
 				padding: 1,
@@ -1105,7 +970,7 @@ CKEDITOR.dialog.add( 'linkwwe', function( editor ) {
 					]
 				}
 				]
-			}
+			}*/
 			]
 		}
 		],
@@ -1140,11 +1005,6 @@ CKEDITOR.dialog.add( 'linkwwe', function( editor ) {
 					var protocol = ( data.url && data.url.protocol != undefined ) ? data.url.protocol : 'http://',
 						url = ( data.url && CKEDITOR.tools.trim( data.url.url ) ) || '';
 					attributes[ 'data-cke-saved-href' ] = ( url.indexOf( '/' ) === 0 ) ? url : protocol + url;
-					break;
-				case 'anchor':
-					var name = ( data.anchor && data.anchor.name ),
-						id = ( data.anchor && data.anchor.id );
-					attributes[ 'data-cke-saved-href' ] = '#' + ( name || id || '' );
 					break;
 				case 'email':
 
@@ -1286,9 +1146,6 @@ CKEDITOR.dialog.add( 'linkwwe', function( editor ) {
 
 				element.setAttributes( attributes );
 				element.removeAttributes( removeAttributes );
-
-				if ( data.adv && data.adv.advName && CKEDITOR.plugins.linkwwe.synAnchorSelector )
-					element.addClass( element.getChildCount() ? 'cke_anchor' : 'cke_anchor_empty' );
 
 				// Update text view when user changes protocol (#4612).
 				if ( href == textView || data.type == 'email' && textView.indexOf( '@' ) != -1 ) {

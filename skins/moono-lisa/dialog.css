@@ -1154,3 +1154,13 @@ a.cke_dialog_ui_button.cke_dialog_image_browse
 	border: 2px solid #139FF7;
 	padding: 6px;
 }
+
+/* ww.edit-Spezifika */
+
+.cke_dialog_page_contents input.cke_dialog_ui_input_text  {
+  width: 50%;
+}
+
+.cke_dialog_page_contents #pagename {
+  padding-top: 3px;
+}

@@ -34,7 +34,7 @@ CKEDITOR.plugins.setLang( 'linkwwe', 'en', {
 	noEmail: 'Please type the e-mail address',
 	noUrl: 'Please type the link URL',
 	other: '<other>',
-        page: 'page',
+	page: 'page',
 	popupDependent: 'Dependent (Netscape)',
 	popupFeatures: 'Popup Window Features',
 	popupFullScreen: 'Full Screen (IE)',
@@ -63,5 +63,6 @@ CKEDITOR.plugins.setLang( 'linkwwe', 'en', {
 	toolbar: 'Link',
 	type: 'Link Type',
 	unlink: 'Unlink',
-	upload: 'Upload'
+	upload: 'Upload',
+	findLink: 'Find Link'
 });

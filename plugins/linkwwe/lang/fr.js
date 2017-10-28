@@ -34,7 +34,7 @@ CKEDITOR.plugins.setLang( 'linkwwe', 'fr', {
 	noEmail: 'Veuillez entrer l\'adresse e-mail',
 	noUrl: 'Veuillez entrer l\'adresse du lien',
 	other: '<autre>',
-        page: 'page',
+	page: 'page',
 	popupDependent: 'Dépendante (Netscape)',
 	popupFeatures: 'Options de la fenêtre popup',
 	popupFullScreen: 'Plein écran (IE)',
@@ -58,10 +58,11 @@ CKEDITOR.plugins.setLang( 'linkwwe', 'fr', {
 	title: 'Lien',
 	toAnchor: 'Transformer le lien en ancre dans le texte',
 	toEmail: 'E-mail',
-        toPage: 'Page (lien interne)',
+	toPage: 'Page (lien interne)',
 	toUrl: 'URL (lien externe)',
 	toolbar: 'Lien',
 	type: 'Type de lien',
 	unlink: 'Supprimer le lien',
-	upload: 'Envoyer'
+	upload: 'Envoyer',
+	findLink: 'Rechercher Lien'
 });

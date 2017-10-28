@@ -34,7 +34,7 @@ CKEDITOR.plugins.setLang( 'linkwwe', 'de', {
 	noEmail: 'Bitte geben Sie e-Mail Adresse an',
 	noUrl: 'Bitte geben Sie die Link-URL an',
 	other: '<andere>',
-        page: 'Seite',
+	page: 'Seite',
 	popupDependent: 'Abhängig (Netscape)',
 	popupFeatures: 'Pop-up Fenster-Eigenschaften',
 	popupFullScreen: 'Vollbild (IE)',
@@ -58,10 +58,11 @@ CKEDITOR.plugins.setLang( 'linkwwe', 'de', {
 	title: 'Link',
 	toAnchor: 'Anker in dieser Seite',
 	toEmail: 'E-Mail',
-        toPage: 'Seite (interner Link)',
+	toPage: 'Seite (interner Link)',
 	toUrl: 'URL (externer Link)',
 	toolbar: 'Link einfügen/editieren',
 	type: 'Link-Typ',
 	unlink: 'Link entfernen',
-	upload: 'Hochladen'
+	upload: 'Hochladen',
+	findLink: 'Link finden'
 });
